@@ -1,6 +1,6 @@
 {
     "name": "@inovex.tecnologia/nestjs-rabbitmq",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Integracao RabbitMQ para NestJS: Connection por vhost (estilo @VHostX), publisher com confirm e um BaseListener abstrato com topologia/DLQ/ack automatico.",
     "license": "MIT",
     "author": "Inovex Tecnologia",
