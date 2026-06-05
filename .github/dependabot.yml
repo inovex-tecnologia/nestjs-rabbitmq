@@ -1,19 +1,24 @@
 version: 2
 updates:
-    # Mantem os SHAs das GitHub Actions atualizados (com PR + changelog) — assim
-    # o pin por commit nao fica preso a uma versao vulneravel para sempre.
+    # Atualiza SHAs das GitHub Actions — só patch/minor (sem major).
     - package-ecosystem: github-actions
       directory: /
       schedule:
           interval: weekly
+      ignore:
+          - dependency-name: "*"
+            update-types: ["version-update:semver-major"]
       commit-message:
           prefix: ci
 
-    # Alertas/updates de seguranca das dependencias npm da lib.
+    # Alertas de seguranca das deps npm — so patch/minor (sem major).
     - package-ecosystem: npm
       directory: /
       schedule:
           interval: weekly
+      ignore:
+          - dependency-name: "*"
+            update-types: ["version-update:semver-major"]
+      open-pull-requests-limit: 3
       commit-message:
           prefix: deps
-      open-pull-requests-limit: 5
