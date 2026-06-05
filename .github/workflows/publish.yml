@@ -1,0 +1,87 @@
+name: Publish to npm
+
+# Publica AUTOMATICAMENTE a cada push na main — mas SO se a versao do package.json
+# ainda nao existir no npm. Assim, push de README/refactor nao republica nada;
+# pra lancar, basta dar bump na versao (npm version ...) e push.
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'src/**'
+            - 'package.json'
+            - 'tsconfig*.json'
+            - 'pnpm-lock.yaml'
+
+# Deny-by-default: nenhum job herda permissao; cada job pede so o que precisa.
+permissions: {}
+
+# Nunca roda dois publishes ao mesmo tempo (evita corrida/duplicidade).
+concurrency:
+    group: publish-npm
+    cancel-in-progress: false
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+
+        # Registro do deploy no GitHub (sem required reviewers = totalmente automatico).
+        # NAO adicione "required reviewers" neste environment, senao deixa de ser automatico.
+        environment:
+            name: release
+            url: https://www.npmjs.com/package/@inovex.tecnologia/nestjs-rabbitmq
+
+        permissions:
+            contents: read # ler o codigo do repo
+            id-token: write # OIDC: Trusted Publishing + provenance (SEM token armazenado)
+
+        steps:
+            # Actions pinadas por SHA de commit (nao por tag movel) — supply chain.
+            - name: Checkout
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+              with:
+                  persist-credentials: false # nao deixa o GITHUB_TOKEN no .git/config
+
+            - name: Setup Node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+              with:
+                  node-version: 24
+                  registry-url: https://registry.npmjs.org
+
+            # Trusted Publishing exige npm >= 11.5.1; garante uma versao recente.
+            - name: Atualiza npm (Trusted Publishing/OIDC)
+              run: npm install -g npm@latest
+
+            - name: Habilita pnpm via corepack
+              run: corepack enable
+
+            # Decide se ha algo novo pra publicar: compara a versao do package.json
+            # com o que ja esta no npm. Se igual, pula tudo (push sem bump = no-op).
+            - name: Esta versao ja foi publicada?
+              id: check
+              run: |
+                  NAME="$(node -p "require('./package.json').name")"
+                  VERSION="$(node -p "require('./package.json').version")"
+                  if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
+                      echo "publish=false" >> "$GITHUB_OUTPUT"
+                      echo "::notice::$NAME@$VERSION ja esta no npm — nada a publicar."
+                  else
+                      echo "publish=true" >> "$GITHUB_OUTPUT"
+                      echo "::notice::Vai publicar $NAME@$VERSION."
+                  fi
+
+            # --ignore-scripts: NENHUM lifecycle script de dependencia executa.
+            # --frozen-lockfile: usa o lockfile como esta (build reproduzivel).
+            - name: Instala dependencias (sem executar scripts)
+              if: steps.check.outputs.publish == 'true'
+              run: pnpm install --frozen-lockfile --ignore-scripts
+
+            - name: Build
+              if: steps.check.outputs.publish == 'true'
+              run: pnpm run build
+
+            # Trusted Publishing: o npm troca o OIDC token do GitHub por credencial
+            # efemera. Nada de NPM_TOKEN no repo. provenance:true (no publishConfig)
+            # anexa a atestacao de origem automaticamente.
+            - name: Publish (npm Trusted Publishing + provenance)
+              if: steps.check.outputs.publish == 'true'
+              run: npm publish

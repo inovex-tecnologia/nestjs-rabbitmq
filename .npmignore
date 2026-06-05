@@ -1,0 +1,6 @@
+src
+tsconfig*.json
+*.tsbuildinfo
+.gitignore
+pnpm-lock.yaml
+node_modules

@@ -1,0 +1,9 @@
+# Donos do codigo: todo PR exige review de quem estiver listado aqui
+# (ative "Require review from Code Owners" na protecao da branch main).
+# Troque pelos usuarios/times reais (ex.: @inovex-tecnologia/maintainers).
+
+* @SEU-USUARIO
+
+# O pipeline de publish e o ponto mais sensivel — exija dono explicito:
+/.github/workflows/ @SEU-USUARIO
+/package.json       @SEU-USUARIO

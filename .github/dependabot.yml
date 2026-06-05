@@ -1,0 +1,19 @@
+version: 2
+updates:
+    # Mantem os SHAs das GitHub Actions atualizados (com PR + changelog) — assim
+    # o pin por commit nao fica preso a uma versao vulneravel para sempre.
+    - package-ecosystem: github-actions
+      directory: /
+      schedule:
+          interval: weekly
+      commit-message:
+          prefix: ci
+
+    # Alertas/updates de seguranca das dependencias npm da lib.
+    - package-ecosystem: npm
+      directory: /
+      schedule:
+          interval: weekly
+      commit-message:
+          prefix: deps
+      open-pull-requests-limit: 5

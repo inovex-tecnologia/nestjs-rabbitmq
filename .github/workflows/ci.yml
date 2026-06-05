@@ -1,0 +1,43 @@
+name: CI
+
+# Roda em todo PR e em push na main. Serve como status check obrigatorio
+# (Settings > Branches/Rulesets) antes de qualquer merge na main.
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions: {} # deny-by-default
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+              with:
+                  persist-credentials: false
+
+            - name: Setup Node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+              with:
+                  node-version: 24
+
+            - name: Habilita pnpm via corepack
+              run: corepack enable
+
+            # --ignore-scripts: nenhum lifecycle script de dependencia executa no CI.
+            - name: Instala dependencias (sem executar scripts)
+              run: pnpm install --frozen-lockfile --ignore-scripts
+
+            - name: Typecheck
+              run: pnpm run lint # tsc --noEmit
+
+            - name: Build
+              run: pnpm run build
