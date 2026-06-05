@@ -6,7 +6,7 @@
     "author": "Inovex Tecnologia",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/inovex/nestjs-rabbitmq.git"
+        "url": "git+https://github.com/inovex-tecnologia/nestjs-rabbitmq.git"
     },
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -17,7 +17,6 @@
     ],
     "publishConfig": {
         "access": "public",
-        "provenance": true,
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {

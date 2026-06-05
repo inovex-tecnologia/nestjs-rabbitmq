@@ -28,7 +28,7 @@ jobs:
         # NAO adicione "required reviewers" neste environment, senao deixa de ser automatico.
         environment:
             name: release
-            url: https://www.npmjs.com/package/@inovex.tecnologia/nestjs-rabbitmq
+            url: https://www.npmjs.com/package/@inovex.tecnologia%2fnestjs-rabbitmq
 
         permissions:
             contents: read # ler o codigo do repo
@@ -84,4 +84,4 @@ jobs:
             # anexa a atestacao de origem automaticamente.
             - name: Publish (npm Trusted Publishing + provenance)
               if: steps.check.outputs.publish == 'true'
-              run: npm publish
+              run: npm publish --provenance
