@@ -7,8 +7,10 @@ export type OnReady = (connection: RabbitConnection) => void | Promise<void>;
 
 /** Opcoes de comportamento do manager. */
 export interface RabbitConnectionOptions {
-    /** Tempo de espera antes de tentar reconectar (ms). Default 5000. */
+    /** Espera BASE antes de reconectar (ms). Default 1000. Cresce exponencialmente. */
     reconnectMs?: number;
+    /** Teto da espera de reconexao (ms). Default 30000. */
+    reconnectMaxMs?: number;
 }
 
 /**
@@ -25,10 +27,12 @@ export interface RabbitConnectionOptions {
 export class RabbitConnectionManager implements OnModuleInit, OnModuleDestroy {
     private readonly logger: Logger;
     private readonly reconnectMs: number;
+    private readonly reconnectMaxMs: number;
 
     private connection: RabbitConnection | null = null;
     private connecting: Promise<RabbitConnection> | null = null;
     private closing = false;
+    private reconnectAttempts = 0;
 
     private readonly connectArg: string | Options.Connect;
     private readonly readyCbs: OnReady[] = [];
@@ -42,11 +46,19 @@ export class RabbitConnectionManager implements OnModuleInit, OnModuleDestroy {
         options: RabbitConnectionOptions = {},
     ) {
         this.logger = new Logger(`${RabbitConnectionManager.name}[${vhost}]`);
-        this.reconnectMs = options.reconnectMs ?? 5000;
+        this.reconnectMs = options.reconnectMs ?? 1000;
+        this.reconnectMaxMs = options.reconnectMaxMs ?? 30_000;
 
         const invalido = !source || (typeof source !== 'string' && !source.host);
         if (invalido) {
             throw new Error(`Conexao RabbitMQ ausente/incompleta para o vhost "${vhost}"`);
+        }
+        // Falha cedo em vez de tentar logar como guest e estourar ACCESS_REFUSED em runtime.
+        if (typeof source !== 'string' && (!source.username || !source.password)) {
+            throw new Error(
+                `Credenciais RabbitMQ ausentes para o vhost "${vhost}" — ` +
+                    'defina RABBITMQ__<NOME>__USERNAME e __PASSWORD.',
+            );
         }
 
         this.connectArg =
@@ -66,9 +78,11 @@ export class RabbitConnectionManager implements OnModuleInit, OnModuleDestroy {
     }
 
     async onModuleInit(): Promise<void> {
-        await this.open().catch((e) =>
-            this.logger.error(`Falha inicial ao conectar (${this.alvo}):\n${explicarErro(e)}`),
-        );
+        await this.open().catch((e) => {
+            this.logger.error(`Falha inicial ao conectar (${this.alvo}):\n${explicarErro(e)}`);
+            // Sem isso, broker fora do ar no boot deixaria consumidores offline pra sempre.
+            if (!this.closing) this.scheduleReconnect();
+        });
     }
 
     async onModuleDestroy(): Promise<void> {
@@ -100,27 +114,22 @@ export class RabbitConnectionManager implements OnModuleInit, OnModuleDestroy {
     }
 
     private open(): Promise<RabbitConnection> {
+        // Evita conexao duplicada (ex.: timer de reconexao disparando depois que um
+        // get() ja reconectou — a conexao antiga vazaria aberta).
+        if (this.connection) return Promise.resolve(this.connection);
         if (this.connecting) return this.connecting;
 
         this.connecting = connect(this.connectArg)
             .then(async (conn) => {
                 this.connection = conn;
                 this.connecting = null;
+                this.reconnectAttempts = 0;
                 this.logger.log('Conectado ao RabbitMQ');
 
                 conn.on('error', (err: Error) => this.logger.warn(`Erro na conexao: ${err?.message}`));
                 conn.on('close', () => {
                     this.connection = null;
-                    if (!this.closing) {
-                        this.logger.warn(`Conexao fechada; reconectando em ${this.reconnectMs}ms`);
-                        setTimeout(
-                            () =>
-                                void this.open().catch((e) =>
-                                    this.logger.error(`Falha ao reconectar (${this.alvo}):\n${explicarErro(e)}`),
-                                ),
-                            this.reconnectMs,
-                        );
-                    }
+                    if (!this.closing) this.scheduleReconnect();
                 });
 
                 // Re-roda os setups (consumidores re-declaram topologia e reabrem consume).
@@ -134,6 +143,32 @@ export class RabbitConnectionManager implements OnModuleInit, OnModuleDestroy {
             });
 
         return this.connecting;
+    }
+
+    /**
+     * Agenda nova tentativa com backoff exponencial + jitter (evita thundering herd
+     * quando o broker volta e N instancias reconectam juntas). Se a tentativa falhar,
+     * REAGENDA — sem isso, uma unica falha de reconexao mataria o loop e consumidores
+     * ficariam offline ate o restart do processo.
+     */
+    private scheduleReconnect(): void {
+        const delay = this.nextReconnectDelay();
+        this.logger.warn(`Conexao fechada; reconectando em ${delay}ms`);
+        setTimeout(() => {
+            if (this.closing) return;
+            void this.open().catch((e) => {
+                this.logger.error(`Falha ao reconectar (${this.alvo}):\n${explicarErro(e)}`);
+                if (!this.closing) this.scheduleReconnect();
+            });
+        }, delay);
+    }
+
+    /** Backoff exponencial com teto + jitter de ate 20%. */
+    private nextReconnectDelay(): number {
+        const base = Math.min(this.reconnectMaxMs, this.reconnectMs * 2 ** this.reconnectAttempts);
+        this.reconnectAttempts = Math.min(this.reconnectAttempts + 1, 10);
+        const withJitter = base * (1 + 0.2 * Math.random());
+        return Math.min(this.reconnectMaxMs, Math.round(withJitter));
     }
 }
 
