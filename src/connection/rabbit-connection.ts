@@ -167,7 +167,8 @@ export class RabbitConnectionManager implements OnModuleInit, OnModuleDestroy {
     private nextReconnectDelay(): number {
         const base = Math.min(this.reconnectMaxMs, this.reconnectMs * 2 ** this.reconnectAttempts);
         this.reconnectAttempts = Math.min(this.reconnectAttempts + 1, 10);
-        return Math.round(base + base * 0.2 * Math.random());
+        const withJitter = base * (1 + 0.2 * Math.random());
+        return Math.min(this.reconnectMaxMs, Math.round(withJitter));
     }
 }
 
