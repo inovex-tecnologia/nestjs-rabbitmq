@@ -155,6 +155,7 @@ export class RabbitConnectionManager implements OnModuleInit, OnModuleDestroy {
         const delay = this.nextReconnectDelay();
         this.logger.warn(`Conexao fechada; reconectando em ${delay}ms`);
         setTimeout(() => {
+            if (this.closing) return;
             void this.open().catch((e) => {
                 this.logger.error(`Falha ao reconectar (${this.alvo}):\n${explicarErro(e)}`);
                 if (!this.closing) this.scheduleReconnect();
