@@ -28,8 +28,7 @@ export interface RegisterAsyncOptions extends RabbitConnectionOptions {
 }
 
 /**
- * Disponibiliza um {@link RabbitConnectionManager} POR VHOST para todo o app — o
- * equivalente em Nest dos varios `@VHostX` do projeto Java.
+ * Disponibiliza um {@link RabbitConnectionManager} POR VHOST para todo o app
  *
  *   // Lendo do ConfigService (convencao `rabbitmq.connections.<vhost>`):
  *   imports: [RabbitMQModule.register(['stripe', 'b2b'])]

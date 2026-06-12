@@ -14,9 +14,7 @@ export interface RabbitConnectionOptions {
 }
 
 /**
- * Gerencia UMA Connection do RabbitMQ (long-lived, com reconexao automatica) — o
- * equivalente em Nest de uma Connection injetada por vhost (`@VHostX`) do projeto
- * Java. O {@link RabbitMQModule} cria uma instancia por vhost.
+ * Gerencia UMA Connection do RabbitMQ (long-lived, com reconexao automatica) 
  *
  * - Para PUBLICAR: pegue a conexao com {@link get} e use o helper `publish()`.
  * - Para CONSUMIR: registre um setup com {@link onReady}; ele roda na conexao atual e

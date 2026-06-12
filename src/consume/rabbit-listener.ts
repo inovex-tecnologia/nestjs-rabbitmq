@@ -5,8 +5,7 @@ import type { RabbitConnection } from '../connection/connection-source';
 import type { ListenerOptions, MessageContext } from './listener-options';
 
 /**
- * Base abstrato de consumidor RabbitMQ — o equivalente em Nest do
- * `infra.rabbitmq.impl.RabbitMQBaseListener` do projeto Java.
+ * Base abstrato de consumidor RabbitMQ 
  *
  * O subclass declara a fila/topologia em {@link options} e trata a mensagem em
  * {@link handle}. O base cuida de tudo o que era boilerplate:
