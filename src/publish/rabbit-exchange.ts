@@ -1,7 +1,4 @@
-/**
- * Espelha `infra.rabbitmq.RabbitMQExchange` do projeto Java:
- * um destino de publicacao = nome do exchange + routing key.
- */
+
 export interface RabbitExchange {
     readonly exchange: string;
     readonly routingKey: string;

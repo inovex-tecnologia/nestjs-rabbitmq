@@ -16,7 +16,7 @@ export interface CollectConnectionsOptions {
 
 /**
  * Conexoes RabbitMQ por vhost a partir do ambiente (cada uma vira uma Connection
- * injetavel via `@VHost...`). Suporta dois estilos, espelhando o HOCON do projeto Java.
+ * injetavel via `@VHost...`). Suporta dois estilos.
  *
  * Estilo BLOCO (recomendado, tem prioridade):
  *   RABBITMQ__<VHOST>__HOST / __PORT / __VHOST / __USERNAME / __PASSWORD

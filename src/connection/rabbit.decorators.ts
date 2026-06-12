@@ -10,7 +10,7 @@ export const rabbitToken = (vhost: string): string => `RABBIT_CONNECTION_${vhost
 export const InjectRabbit = (vhost: string): ParameterDecorator => Inject(rabbitToken(vhost));
 
 /**
- * Fabrica um decorator no estilo `@VHostX` do projeto Java, fixando o nome do vhost.
+ * Fabrica um decorator no estilo `@VHostX`, fixando o nome do vhost.
  *
  *   export const VHostStripe = createVhostInject('stripe');
  *   constructor(@VHostStripe() private readonly rabbit: RabbitConnectionManager) {}

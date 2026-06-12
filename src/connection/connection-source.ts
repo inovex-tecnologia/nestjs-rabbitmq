@@ -1,14 +1,12 @@
 import type { ChannelModel } from 'amqplib';
 
 /**
- * A Connection do amqplib (o que `connect()` devolve). Mesmo papel do
- * `com.rabbitmq.client.Connection` do projeto Java.
+ * A Connection do amqplib (o que `connect()` devolve).
  */
 export type RabbitConnection = ChannelModel;
 
 /**
- * Bloco de conexao RabbitMQ (host/port/vhost/user/pass) — espelha o
- * `vHostX { host, port, vhost, username, password }` do HOCON do projeto Java.
+ * Bloco de conexao RabbitMQ (host/port/vhost/user/pass) 
  */
 export interface RabbitConnectionConfig {
     protocol: 'amqp' | 'amqps';

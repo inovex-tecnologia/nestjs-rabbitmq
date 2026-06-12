@@ -1,6 +1,6 @@
 # @inovex.tecnologia/nestjs-rabbitmq
 
-Integração RabbitMQ para NestJS, no estilo do projeto Java da Inovex (Play + Pekko):
+Integração RabbitMQ para NestJS:
 uma `Connection` **por vhost** (estilo `@VHostX`), um publisher com *publisher confirm*
 e um **`RabbitMQBaseListener`** abstrato que tira todo o boilerplate de consumir filas.
 
@@ -14,13 +14,13 @@ pnpm add @inovex.tecnologia/nestjs-rabbitmq amqplib
 
 ## Conceitos
 
-| Peça | Equivalente Java | Papel |
+| Peça | Papel |
 |---|---|---|
-| `RabbitConnectionManager` | `@VHostX Connection` | 1 conexão long-lived por vhost, com reconexão automática |
-| `RabbitMQModule` | módulo DI de conexões | cria 1 provider por vhost |
-| `RabbitMQBaseListener` | `RabbitMQBaseListener` | base de consumidor: topologia + DLQ + prefetch + ack automático |
-| `publish()` | `RabbitMQPublish.enviar` | publica persistente com confirm do broker |
-| `collectConnections()` | parse do HOCON `vHostX {}` | lê conexões do ambiente |
+| `RabbitConnectionManager` | 1 conexão long-lived por vhost, com reconexão automática |
+| `RabbitMQModule` |  cria 1 provider por vhost |
+| `RabbitMQBaseListener` |  base de consumidor: topologia + DLQ + prefetch + ack automático |
+| `publish()` |  publica persistente com confirm do broker |
+| `collectConnections()` |  lê conexões do ambiente |
 
 ---
 
