@@ -19,7 +19,7 @@ importers:
         version: 0.10.8
       '@types/node':
         specifier: ^24.11.0
-        version: 24.13.0
+        version: 24.13.2
       amqplib:
         specifier: ^0.10.5
         version: 0.10.9
@@ -74,8 +74,8 @@ packages:
   '@types/amqplib@0.10.8':
     resolution: {integrity: sha512-vtDp8Pk1wsE/AuQ8/Rgtm6KUZYqcnTgNvEHwzCkX8rL7AGsC6zqAfKAAJhUZXFhM/Pp++tbnUHiam/8vVpPztA==}
 
-  '@types/node@24.13.0':
-    resolution: {integrity: sha512-5vtOqGQr4NJKeEzV441FcOi2MeG9UTWq9LqVLGneDdu4vlX17H8kQ2PA2UmNwCUGPVDj4oBjNhS7ReVEIWJJrg==}
+  '@types/node@24.13.2':
+    resolution: {integrity: sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA==}
 
   amqplib@0.10.9:
     resolution: {integrity: sha512-jwSftI4QjS3mizvnSnOrPGYiUnm1vI2OP1iXeOUz5pb74Ua0nbf6nPyyTzuiCLEE3fMpaJORXh2K/TQ08H5xGA==}
@@ -246,9 +246,9 @@ snapshots:
 
   '@types/amqplib@0.10.8':
     dependencies:
-      '@types/node': 24.13.0
+      '@types/node': 24.13.2
 
-  '@types/node@24.13.0':
+  '@types/node@24.13.2':
     dependencies:
       undici-types: 7.18.2
 
